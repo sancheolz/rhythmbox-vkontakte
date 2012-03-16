@@ -15,27 +15,33 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import rhythmdb
-from xml.dom import minidom
-from VkontakteResult import VkontakteResult
+import rb
 import urllib2
 import hashlib
-import rb
+import codecs
+
+from xml.dom import minidom
+from gi.repository import RB
 from html_decode import decode_htmlentities
+
+from VkontakteResult import VkontakteResult
 
 APP_ID = 1850196
 SECRET_KEY = 'nk0n6I6vjQ'
 USER_ID = 76347967
+
+def utf8ise(s):
+	return codecs.utf_8_encode(s)[0]
 
 class VkontakteSearch:
 	def __init__(self, search_term, db, entry_type):
 		self.search_term = search_term
 		self.db = db
 		self.entry_type = entry_type
-		self.query_model = rhythmdb.QueryModel()
 		self.search_complete = False
 		self.entries_hashes = []
-	
+		self.query_model = RB.RhythmDBQueryModel.new_empty(db)
+
 	def make_sig(self, method, query):
 		str = "%sapi_id=%scount=300method=%sq=%stest_mode=1v=2.0%s" % (USER_ID, APP_ID, method, query, SECRET_KEY)
 		return hashlib.md5(str).hexdigest()
@@ -51,20 +57,21 @@ class VkontakteSearch:
 			return
 		self.entries_hashes.append(hash)
 		if entry is None:
-			entry = self.db.entry_new(self.entry_type, result.url)
+			entry = RB.RhythmDBEntry.new(self.db, self.entry_type, result.url)
 			if result.title:
-				self.db.set(entry, rhythmdb.PROP_TITLE, decode_htmlentities(result.title))
+				self.db.entry_set(entry, RB.RhythmDBPropType.TITLE, utf8ise(decode_htmlentities(result.title)))
 			if result.duration:
-				self.db.set(entry, rhythmdb.PROP_DURATION, result.duration)
+				self.db.entry_set(entry, RB.RhythmDBPropType.DURATION, result.duration)
 			if result.artist:
-				self.db.set(entry, rhythmdb.PROP_ARTIST, decode_htmlentities(result.artist))
+				self.db.entry_set(entry, RB.RhythmDBPropType.ARTIST, utf8ise(decode_htmlentities(result.artist)))
 		self.query_model.add_entry(entry, -1)
+		self.db.commit()
 
 	def on_search_results_recieved(self, data):
 		# vkontakte sometimes returns invalid XML with empty first line
 		data = data.lstrip()
 		# remove invalid symbol that occured in titles/artist
-		data = data.replace(u'\uffff', '')
+		#data = data.replace(u'\uffff', '')
 		xmldoc = minidom.parseString(data)
 		audios = xmldoc.getElementsByTagName("audio")
 		for audio in audios:

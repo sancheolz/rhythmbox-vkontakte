@@ -1,3 +1,15 @@
+!!! NOTES
+
+Fixed compatibility with 2.90.1 (Ubuntu 11.10), but lost a lot of functionality and support for previous versions.
+
+INSTALLATION:
+cd ~/.local/share/rhythmbox/plugins
+git clone git://github.com/ivalkeen/rhythmbox-vkontakte.git vkontakte
+
+USING:
+drag-n-drop found tracks to play queue (doesn't play by click in search results)
+
+======
 rhythmbox-vkontakte is a rhythmbox plugin for searching and listening to vkontakte (vk.com) audio records
 
 rhythmbox-youtube (http://gitorious.org/rhythmbox-youtube/rhythmbox-youtube)
