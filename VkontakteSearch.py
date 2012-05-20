@@ -84,4 +84,3 @@ class VkontakteSearch:
 		path = "http://api.vk.com/api.php?api_id=%s&count=300&v=2.0&method=audio.search&sig=%s&test_mode=1&q=%s" % (APP_ID, sig, urllib2.quote(self.search_term))
 		loader = rb.Loader()
 		loader.get_url(path, self.on_search_results_recieved)
-

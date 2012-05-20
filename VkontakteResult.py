@@ -16,9 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 class VkontakteResult:
-	def __init__(self, entry):
-		# Store the function. This will be called when we are ready to be added to the db.
-		self.title = entry.getElementsByTagName('title')[0].firstChild.nodeValue.strip()
-		self.duration = int(entry.getElementsByTagName('duration')[0].firstChild.nodeValue)
-		self.artist = entry.getElementsByTagName('artist')[0].firstChild.nodeValue.strip()
-		self.url = entry.getElementsByTagName('url')[0].firstChild.nodeValue
+  def __init__(self, entry):
+    # Store the function. This will be called when we are ready to be added to the db.
+    self.title = entry.getElementsByTagName('title')[0].firstChild.nodeValue.strip()
+    self.duration = int(entry.getElementsByTagName('duration')[0].firstChild.nodeValue)
+    self.artist = entry.getElementsByTagName('artist')[0].firstChild.nodeValue.strip()
+    self.url = entry.getElementsByTagName('url')[0].firstChild.nodeValue
