@@ -12,6 +12,7 @@ class VkontakteSource(RB.Source):
     self.__load_current_size = 0
     self.__load_total_size = 0
     self.error_msg = ''
+    self.searches = {}
 
   def initialise(self):
     shell = self.props.shell
@@ -60,6 +61,7 @@ class VkontakteSource(RB.Source):
     self.do_selected()
 
   def do_selected(self):
+    print "do_selected"
     if not self.initialised:
       self.initialise()
     self.search_button.grab_default()
@@ -68,30 +70,34 @@ class VkontakteSource(RB.Source):
   def do_impl_get_status(self):
     return self.do_get_status()
 
-  def do_get_status(self):
+  def do_get_status(self, *args):
     if self.error_msg:
+      print "self.error_msg = '%s'" % self.error_msg
       error_msg = self.error_msg
       self.error_msg = ''
       return (error_msg, "", 1)
+
     if self.downloading:
+      print "self.downloading = %s" % self.downloading
       if self.__load_total_size > 0:
         # Got data
         progress = min (float(self.__load_current_size) / self.__load_total_size, 1.0)
       else:
         # Download started, no data yet received
         progress = -1.0
-      str = "Downloading %s" % self.filename[:70]
+      status = "Downloading %s" % self.filename[:70]
       if self.download_queue:
-        str += " (%s files more in queue)" % len(self.download_queue)
-      return (str, "", progress)
-    if self.current_search:
+        status += " (%s files more in queue)" % len(self.download_queue)
+      return (status, "", progress)
+    
+    if hasattr(self, 'current_search') and self.current_search:
+      print "self.current_search = '%s'" % self.current_search
       if self.searches[self.current_search].is_complete():
         return (self.props.query_model.compute_status_normal("Found %d result", "Found %d results"), "", 1)
       else:
         return ("Searching for \"{0}\"".format(self.current_search), "", -1)
 
-    else:
-      return ("", "", 1)
+    return ("", "", 1)
 
   def do_impl_delete_thyself(self):
     if self.initialised:
@@ -105,12 +111,19 @@ class VkontakteSource(RB.Source):
     return True
 
   def on_search_button_clicked(self, button):
+    print "clicked search"
     entry = self.search_entry
     if entry.get_text():
-      search = VkontakteSearch(entry.get_text(), self.props.shell.props.db, self.props.entry_type)
+      self.current_search = entry.get_text()
+      print "searching for '%s'" % self.current_search
+ 
+      search = VkontakteSearch(self.current_search, \
+                               self.props.shell.props.db, self.props.entry_type)
       # Start the search asynchronously
       GLib.idle_add(search.start, priority=GLib.PRIORITY_HIGH_IDLE)
       self.props.query_model = search.query_model
+
+      self.searches[self.current_search] = search
       self.entry_view.set_model(self.props.query_model)
 
 GObject.type_register(VkontakteSource)

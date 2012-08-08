@@ -35,6 +35,7 @@ def utf8ise(s):
 
 class VkontakteSearch:
 	def __init__(self, search_term, db, entry_type):
+		print "search_term ='%s'" % search_term
 		self.search_term = search_term
 		self.db = db
 		self.entry_type = entry_type
@@ -47,6 +48,7 @@ class VkontakteSearch:
 		return hashlib.md5(str).hexdigest()
 		
 	def is_complete(self):
+		print "complete = %s" % self.search_complete
 		return self.search_complete
 	
 	def add_entry(self, result):
@@ -69,6 +71,7 @@ class VkontakteSearch:
 
 	def on_search_results_recieved(self, data):
 		# vkontakte sometimes returns invalid XML with empty first line
+		print "got data\n" + str(data)
 		data = data.lstrip()
 		# remove invalid symbol that occured in titles/artist
 		#data = data.replace(u'\uffff', '')
@@ -80,7 +83,9 @@ class VkontakteSearch:
 
 	# Starts searching
 	def start(self):
+		print "start"
 		sig = self.make_sig('audio.search', self.search_term)
 		path = "http://api.vk.com/api.php?api_id=%s&count=300&v=2.0&method=audio.search&sig=%s&test_mode=1&q=%s" % (APP_ID, sig, urllib2.quote(self.search_term))
+		print "path='%s'" % path
 		loader = rb.Loader()
 		loader.get_url(path, self.on_search_results_recieved)
