@@ -70,13 +70,7 @@ class VkontakteSource(RB.Source):
   def do_impl_get_status(self):
     return self.do_get_status()
 
-  def do_get_status(self, *args):
-    if self.error_msg:
-      print "self.error_msg = '%s'" % self.error_msg
-      error_msg = self.error_msg
-      self.error_msg = ''
-      return (error_msg, "", 1)
-
+  def do_get_status(self, status, progress_text, progress):
     if self.downloading:
       print "self.downloading = %s" % self.downloading
       if self.__load_total_size > 0:
@@ -93,9 +87,17 @@ class VkontakteSource(RB.Source):
     if hasattr(self, 'current_search') and self.current_search:
       print "self.current_search = '%s'" % self.current_search
       if self.searches[self.current_search].is_complete():
-        return (self.props.query_model.compute_status_normal("Found %d result", "Found %d results"), "", 1)
+        self.error_msg = self.searches[self.current_search].error_msg
+        if not self.error_msg:
+          return (self.props.query_model.compute_status_normal("Found %d result", "Found %d results"), "", 1)
       else:
         return ("Searching for \"{0}\"".format(self.current_search), "", -1)
+
+    if self.error_msg:
+      print "self.error_msg = '%s'" % self.error_msg
+      #error_msg = self.error_msg
+      #self.error_msg = ''
+      return (self.error_msg, "", 1)
 
     return ("", "", 1)
 
