@@ -15,10 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import rb
 import urllib
 import urllib2
-import hashlib
 import codecs
 
 from xml.dom import minidom
@@ -97,7 +95,7 @@ class VkontakteSearch:
 		#("q", self.search_term)
 		url = self.make_url('audio.search', ("q", self.search_term), self.token)		
 		print "path='%s'" % url
-		loader = rb.Loader()
+		loader = RB.Loader()
 		loader.get_url(url, self.on_search_results_recieved)
 		
 	def make_url(self, method, params, token):
@@ -109,5 +107,5 @@ class VkontakteSearch:
 			params_list = [params]
 		params_list.append(("access_token", token))
 		url = "https://api.vk.com/method/%s.xml?%s" % (method, urllib.urlencode(params_list)) 
-		loader = rb.Loader()
+		loader = RB.Loader()
 		loader.get_url(url, self.on_search_results_recieved)

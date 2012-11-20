@@ -18,44 +18,9 @@
 import cookielib
 import urllib2
 import urllib
+
 from urlparse import urlparse
-from HTMLParser import HTMLParser
-
-class FormParser(HTMLParser):
-    def __init__(self):
-        HTMLParser.__init__(self)
-        self.url = None
-        self.params = {}
-        self.in_form = False
-        self.form_parsed = False
-        self.method = "GET"
-
-    def handle_starttag(self, tag, attrs):
-        tag = tag.lower()
-        if tag == "form":
-            if self.form_parsed:
-                raise RuntimeError("Second form on page")
-            if self.in_form:
-                raise RuntimeError("Already in form")
-            self.in_form = True 
-        if not self.in_form:
-            return
-        attrs = dict((name.lower(), value) for name, value in attrs)
-        if tag == "form":
-            self.url = attrs["action"] 
-            if "method" in attrs:
-                self.method = attrs["method"]
-        elif tag == "input" and "type" in attrs and "name" in attrs:
-            if attrs["type"] in ["hidden", "text", "password"]:
-                self.params[attrs["name"]] = attrs["value"] if "value" in attrs else ""
-
-    def handle_endtag(self, tag):
-        tag = tag.lower()
-        if tag == "form":
-            if not self.in_form:
-                raise RuntimeError("Unexpected end of <form>")
-            self.in_form = False
-            self.form_parsed = True
+from html_decode import FormParser
 
 def auth_user(email, password, client_id, scope, opener):
     response = opener.open(
@@ -72,7 +37,7 @@ def auth_user(email, password, client_id, scope, opener):
           raise RuntimeError("Something wrong")
     parser.params["email"] = email
     parser.params["pass"] = password
-    if parser.method == "post":
+    if parser.method.lower() == "post":
         response = opener.open(parser.url, urllib.urlencode(parser.params))
     else:
         raise NotImplementedError("Method '%s'" % parser.method)
@@ -84,7 +49,7 @@ def give_access(doc, opener):
     parser.close()
     if not parser.form_parsed or parser.url is None:
           raise RuntimeError("Something wrong")
-    if parser.method == "post":
+    if parser.method.lower() == "post":
         response = opener.open(parser.url, urllib.urlencode(parser.params))
     else:
         raise NotImplementedError("Method '%s'" % params.method)
