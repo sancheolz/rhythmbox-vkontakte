@@ -2,6 +2,9 @@ from gi.repository import GObject, Gio, GLib, Peas, Gtk
 from gi.repository import RB
 
 from VkontakteSearch import VkontakteSearch
+import vk_auth
+
+APP_ID = 1850196
 
 class VkontakteSource(RB.Source):
   def __init__(self, **kwargs):
@@ -13,46 +16,93 @@ class VkontakteSource(RB.Source):
     self.__load_total_size = 0
     self.error_msg = ''
     self.searches = {}
+    self.token = ''
 
   def initialise(self):
     shell = self.props.shell
 
-    entry_view = RB.EntryView.new(db=shell.props.db, shell_player=shell.props.shell_player, is_drag_source=True, is_drag_dest=False)
-    #entry_view.activate()
-    #entry_view.add_events(0)
-    entry_view.append_column(RB.EntryViewColumn.TITLE, True)
-    entry_view.append_column(RB.EntryViewColumn.ARTIST, True)
-    entry_view.append_column(RB.EntryViewColumn.DURATION, True)
-    entry_view.set_sorting_order("Title", Gtk.SortType.ASCENDING)
-    entry_view.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
-    self.entry_view = entry_view
+    if len(self.token) == 0:
+        self.show_login_ctrls()
+    else:
+        self.show_search_ctrls()
+  
+  def show_search_ctrls(self):
+        # list of tracks
+        shell = self.props.shell
+        entry_view = RB.EntryView.new(db=shell.props.db, shell_player=shell.props.shell_player, is_drag_source=True, is_drag_dest=False)
+        entry_view.append_column(RB.EntryViewColumn.TITLE, True)
+        entry_view.append_column(RB.EntryViewColumn.ARTIST, True)
+        entry_view.append_column(RB.EntryViewColumn.DURATION, True)
+        entry_view.set_sorting_order("Title", Gtk.SortType.ASCENDING)
+        entry_view.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+        self.entry_view = entry_view        
+        
+        search_entry = Gtk.Entry()
+        search_entry.set_activates_default(True)
 
-    search_entry = Gtk.Entry()
-    search_entry.set_width_chars(100)
-    search_entry.set_activates_default(True)
+        self.search_entry = search_entry
+        search_button = Gtk.Button(_("Search"))
+        search_button.connect("clicked", self.on_search_button_clicked)
 
-    self.search_entry = search_entry
+        search_button.set_can_default(True)
+        self.search_button = search_button
 
-    search_button = Gtk.Button("Search")
-    search_button.connect("clicked", self.on_search_button_clicked)
+        hbox = Gtk.HBox()
+        hbox.pack_start(search_entry, True, True, 0)
+        hbox.pack_start(search_button, False, False, 5)
 
-    search_button.set_can_default(True)
-    self.search_button = search_button
+        vbox = Gtk.VBox()
+        vbox.pack_start(hbox, False, False, 0)
+        vbox.pack_start(entry_view, True, True, 5)
 
-    hbox = Gtk.HBox()
-    hbox.pack_start(search_entry, False, False, 0)
-    hbox.pack_start(search_button, False, False, 5)
+        self.pack_start(vbox, True, True, 0)
+        self.show_all()        
 
-    vbox = Gtk.VBox()
-    vbox.pack_start(hbox, False, False, 0)
-    vbox.pack_start(entry_view, True, True, 5)
-
-    self.pack_start(vbox, True, True, 0)
-    self.show_all()
-
-    #shell.get_ui_manager().ensure_update()
-    self.initialised = True
-
+        self.initialised = True
+  
+  def show_login_ctrls(self):
+        login_label = Gtk.Label(_("Login or e-mail:"))
+    
+        self.login_entry = Gtk.Entry()
+        self.login_entry.set_activates_default(True)
+        
+        password_label = Gtk.Label(_("Password:"))
+        
+        self.password_entry = Gtk.Entry()
+        self.password_entry.set_visibility(False)        
+        
+        alignleft_for_login = Gtk.Alignment.new(0, 0, 0, 0)
+        alignleft_for_login.add(login_label)
+        
+        alignleft_for_password = Gtk.Alignment.new(0, 0, 0, 0)
+        alignleft_for_password.add(password_label)
+                
+        login_button = Gtk.Button(_("Login"))
+        login_button.connect("clicked", self.on_login_button_clicked)
+        
+        table = Gtk.Table(3, 5, False)
+        table.attach(Gtk.Label(), 0, 1, 0, 5, Gtk.AttachOptions.EXPAND | Gtk.AttachOptions.FILL, Gtk.AttachOptions.EXPAND | Gtk.AttachOptions.FILL, 5, 5)
+        
+        table.attach(alignleft_for_login, 1, 2, 0, 1, Gtk.AttachOptions.EXPAND | Gtk.AttachOptions.FILL, Gtk.AttachOptions.EXPAND | Gtk.AttachOptions.FILL, 5, 5)
+        table.attach(self.login_entry, 1, 2, 1, 2, Gtk.AttachOptions.EXPAND | Gtk.AttachOptions.FILL, Gtk.AttachOptions.EXPAND | Gtk.AttachOptions.FILL, 5, 5)
+        table.attach(alignleft_for_password, 1, 2, 2, 3, Gtk.AttachOptions.EXPAND | Gtk.AttachOptions.FILL, Gtk.AttachOptions.EXPAND | Gtk.AttachOptions.FILL, 5, 5)
+        table.attach(self.password_entry, 1, 2, 3, 4, Gtk.AttachOptions.EXPAND | Gtk.AttachOptions.FILL, Gtk.AttachOptions.EXPAND | Gtk.AttachOptions.FILL, 5, 5)
+        table.attach(login_button, 1, 2, 4, 5, Gtk.AttachOptions.EXPAND | Gtk.AttachOptions.FILL, Gtk.AttachOptions.EXPAND | Gtk.AttachOptions.FILL, 5, 5)
+        
+        table.attach(Gtk.Label(), 2, 3, 0, 5, Gtk.AttachOptions.EXPAND | Gtk.AttachOptions.FILL, Gtk.AttachOptions.EXPAND | Gtk.AttachOptions.FILL, 5, 5)
+        
+        vbox = Gtk.VBox()        
+        vbox.pack_start(table, False, False, 5)
+        
+        self.table = table
+        
+        self.pack_start(vbox, True, True, 0)
+        self.show_all()
+        # to delete ctrl do this
+        #vbox.destroy()
+        
+        self.initialised = True
+  
   def do_impl_get_entry_view(self):
     return self.entry_view
 
@@ -64,7 +114,10 @@ class VkontakteSource(RB.Source):
     print "do_selected"
     if not self.initialised:
       self.initialise()
-    self.search_button.grab_default()
+      if len(self.token) > 0:
+        self.search_button.grab_default()
+      else:
+        self.login_button.grab_default()
 
   # rhyhtmbox api break up (0.13.2 - 0.13.3)
   def do_impl_get_status(self):
@@ -112,6 +165,13 @@ class VkontakteSource(RB.Source):
   def do_impl_can_pause(self):
     return True
 
+  def on_login_button_clicked(self, button):
+    login, password = self.login_entry.get_text(), self.password_entry.get_text()
+    self.token, self.user_id = vk_auth.auth(login, password, APP_ID, "audio,friends")
+    for child in self.get_children():
+        child.destroy()
+    self.show_search_ctrls()
+
   def on_search_button_clicked(self, button):
     print "clicked search"
     entry = self.search_entry
@@ -119,7 +179,7 @@ class VkontakteSource(RB.Source):
       self.current_search = entry.get_text()
       print "searching for '%s'" % self.current_search
  
-      search = VkontakteSearch(self.current_search, \
+      search = VkontakteSearch(self.token, self.user_id, self.current_search, \
                                self.props.shell.props.db, self.props.entry_type)
       # Start the search asynchronously
       GLib.idle_add(search.start, priority=GLib.PRIORITY_HIGH_IDLE)
