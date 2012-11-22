@@ -23,7 +23,7 @@ class VkontakteSource(RB.Source):
         self.show_login_ctrls()
     else:
         self.show_search_ctrls()
-  
+
   def show_search_ctrls(self):        
         shell = self.props.shell
         # list of tracks
@@ -33,6 +33,8 @@ class VkontakteSource(RB.Source):
         entry_view.append_column(RB.EntryViewColumn.DURATION, True)
         entry_view.set_sorting_order("Title", Gtk.SortType.ASCENDING)
         entry_view.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+  			
+        entry_view.connect("entry_activated", self.entry_activated_cb)
         self.entry_view = entry_view        
         
         search_entry = Gtk.Entry()
@@ -101,11 +103,15 @@ class VkontakteSource(RB.Source):
   # rhyhtmbox api break up (0.13.2 - 0.13.3)
   def do_impl_activate(self):
     self.do_selected()
+  
+  # play entry by enter or doubleclick
+  def entry_activated_cb(self, entry_view, selected_entry):
+  	self.props.shell.props.shell_player.play_entry(selected_entry, self)
 
   def do_selected(self):
     print "do_selected"
     if not self.initialised:
-      self.initialise()      
+      self.initialise()
 
   # rhyhtmbox api break up (0.13.2 - 0.13.3)
   def do_impl_get_status(self):
