@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import rb
 from gi.repository import GObject, Peas, Gtk, GdkPixbuf, RB
 
 from VkontakteSource import VkontakteSource
@@ -40,7 +41,7 @@ class Vkontakte(GObject.Object, Peas.Activatable):
     entry_type = VkontakteEntryType()
     db.register_entry_type(entry_type)
     what, width, height = Gtk.icon_size_lookup(Gtk.IconSize.LARGE_TOOLBAR)
-    icon = GdkPixbuf.Pixbuf.new_from_file_at_size(RB.find_plugin_file(self, "icon.ico"), width, height)
+    icon = GdkPixbuf.Pixbuf.new_from_file_at_size(rb.find_plugin_file(self, "icon.ico"), width, height)
     source_group = RB.DisplayPageGroup.get_by_id("library")
     self.source = GObject.new(VkontakteSource, name=_("Vkontakte"), shell=shell, query_model=model, plugin=self, pixbuf=icon, entry_type=entry_type)
     shell.append_display_page(self.source, source_group)

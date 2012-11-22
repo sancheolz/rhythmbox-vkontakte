@@ -1,6 +1,6 @@
 !!! NOTES
 
-Fixed compatibility with 2.90.1 (Ubuntu 11.10), but lost a lot of functionality and support for previous versions.
+Fixed compatibility with 2.96 (Ubuntu 12.04) and VK.com api 3.0, but lost a lot of functionality support for previous versions and need authorisation to vk.com.
 
 INSTALLATION:
 cd ~/.local/share/rhythmbox/plugins

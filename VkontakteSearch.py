@@ -18,6 +18,7 @@
 import urllib
 import urllib2
 import codecs
+import rb
 
 from xml.dom import minidom
 from gi.repository import RB
@@ -82,23 +83,22 @@ class VkontakteSearch:
 
 	# Starts searching
 	def start(self):
-		print "start"
+		print "start search call"
 		self.error_msg = ''
 		params = {}
+		params['q'] = self.search_term
 		params['count'] = '100'
-		params['v'] = '2.0'		
-		params['test_mode'] = '1'
 		params['auto_complete'] = '1'
 		params['sort'] = '2'
 		params['uid'] = self.user_id
 		params['q'] = self.search_term
-		#("q", self.search_term)
-		url = self.make_url('audio.search', ("q", self.search_term), self.token)		
+		url = self.make_url('audio.search', params, self.token)		
 		print "path='%s'" % url
-		loader = RB.Loader()
+		loader = rb.Loader()
 		loader.get_url(url, self.on_search_results_recieved)
 		
 	def make_url(self, method, params, token):
+		print "make url method='%s', params='%s', token='%s'" % (method, params, token)
 		if isinstance(params, list):
 			params_list = [kv for kv in params]
 		elif isinstance(params, dict):
@@ -107,5 +107,4 @@ class VkontakteSearch:
 			params_list = [params]
 		params_list.append(("access_token", token))
 		url = "https://api.vk.com/method/%s.xml?%s" % (method, urllib.urlencode(params_list)) 
-		loader = RB.Loader()
-		loader.get_url(url, self.on_search_results_recieved)
+		return url

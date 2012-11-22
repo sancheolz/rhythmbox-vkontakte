@@ -19,16 +19,14 @@ class VkontakteSource(RB.Source):
     self.token = ''
 
   def initialise(self):
-    shell = self.props.shell
-
     if len(self.token) == 0:
         self.show_login_ctrls()
     else:
         self.show_search_ctrls()
   
-  def show_search_ctrls(self):
-        # list of tracks
+  def show_search_ctrls(self):        
         shell = self.props.shell
+        # list of tracks
         entry_view = RB.EntryView.new(db=shell.props.db, shell_player=shell.props.shell_player, is_drag_source=True, is_drag_dest=False)
         entry_view.append_column(RB.EntryViewColumn.TITLE, True)
         entry_view.append_column(RB.EntryViewColumn.ARTIST, True)
@@ -43,9 +41,6 @@ class VkontakteSource(RB.Source):
         self.search_entry = search_entry
         search_button = Gtk.Button(_("Search"))
         search_button.connect("clicked", self.on_search_button_clicked)
-
-        search_button.set_can_default(True)
-        self.search_button = search_button
 
         hbox = Gtk.HBox()
         hbox.pack_start(search_entry, True, True, 0)
@@ -69,7 +64,7 @@ class VkontakteSource(RB.Source):
         password_label = Gtk.Label(_("Password:"))
         
         self.password_entry = Gtk.Entry()
-        self.password_entry.set_visibility(False)        
+        self.password_entry.set_visibility(False)
         
         alignleft_for_login = Gtk.Alignment.new(0, 0, 0, 0)
         alignleft_for_login.add(login_label)
@@ -94,15 +89,12 @@ class VkontakteSource(RB.Source):
         vbox = Gtk.VBox()        
         vbox.pack_start(table, False, False, 5)
         
-        self.table = table
+        self.pack_start(vbox, True, True, 0)        
         
-        self.pack_start(vbox, True, True, 0)
         self.show_all()
-        # to delete ctrl do this
-        #vbox.destroy()
         
         self.initialised = True
-  
+
   def do_impl_get_entry_view(self):
     return self.entry_view
 
@@ -113,11 +105,7 @@ class VkontakteSource(RB.Source):
   def do_selected(self):
     print "do_selected"
     if not self.initialised:
-      self.initialise()
-      if len(self.token) > 0:
-        self.search_button.grab_default()
-      else:
-        self.login_button.grab_default()
+      self.initialise()      
 
   # rhyhtmbox api break up (0.13.2 - 0.13.3)
   def do_impl_get_status(self):
