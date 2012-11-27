@@ -4,7 +4,10 @@ Fixed compatibility with 2.96 (Ubuntu 12.04) and VK.com api 3.0, but lost a lot 
 
 INSTALLATION:
 cd ~/.local/share/rhythmbox/plugins
-git clone git://github.com/ivalkeen/rhythmbox-vkontakte.git vkontakte
+git clone git://github.com/sancheolz/rhythmbox-vkontakte.git vkontakte
+cd vkontakte
+sudo cp org.gnome.rhythmbox.plugins.vkontakte.gschema.xml /usr/share/glib-2.0/schemas/
+sudo glib-compile-schemas /usr/share/glib-2.0/schemas/
 
 USING:
 currently it doesn't play by click in search results, so you can:
