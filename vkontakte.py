@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import rb
-from gi.repository import GObject, Peas, Gtk, GdkPixbuf, RB
+from gi.repository import GObject, Peas, Gtk, GdkPixbuf, RB, PeasGtk, Gio
 
 from VkontakteSource import VkontakteSource
 
@@ -51,3 +51,29 @@ class Vkontakte(GObject.Object, Peas.Activatable):
   def do_deactivate(self):
     self.source.delete_thyself()
     self.source = None
+
+class VkontakteConfig(GObject.GObject, PeasGtk.Configurable):
+  __gtype_name__ = 'VkontakteConfig'
+	object = GObject.property(type=GObject.GObject)
+
+	def __init__(self):
+		GObject.GObject.__init__(self)
+		self.settings = Gio.Settings("org.gnome.rhythmbox.plugins.vkontakte")
+
+	def do_create_configure_widget(self):
+		builder = Gtk.Builder()
+		builder.add_from_file(rb.find_plugin_file(self, "vkontakte-prefs.ui"))
+
+		dialog = builder.get_object('vkontakte-vbox')
+		def filemask_changed(entry, event):
+			filemask = entry.get_text()			
+			if filemask == "":
+				print "missing something"
+				return
+			self.settings['filemask'] = filemask
+		filemask_entry = builder.get_object("filemask")
+		filemask_entry.set_text(self.settings['filemask'])
+
+		filemask_entry.connect("focus-out-event", filemask_changed)
+							
+		return dialog
