@@ -53,7 +53,7 @@ class Vkontakte(GObject.Object, Peas.Activatable):
     self.source = None
 
 class VkontakteConfig(GObject.GObject, PeasGtk.Configurable):
-  __gtype_name__ = 'VkontakteConfig'
+	__gtype_name__ = 'VkontakteConfig'
 	object = GObject.property(type=GObject.GObject)
 
 	def __init__(self):
