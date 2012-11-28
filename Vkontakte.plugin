@@ -1,10 +1,10 @@
 [Plugin]
 Loader=python
 Module=vkontakte
-IAge=1
+IAge=2
 Depends=rb
 Name=Vkontakte
 Description=Search, browse, and listen to vkontakte music.
-Authors=Alexey Grunichev
-Copyright=Copyright © 2010 Alexey Grunichev
-Website=http://github.com/grunichev
+Authors=Alexander Huhlaev
+Copyright=Copyright © 2012 Alexander Huhlaev
+Website=http://github.com/sancheolz
