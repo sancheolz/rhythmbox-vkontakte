@@ -1,7 +1,8 @@
-from gi.repository import GObject, Gio, GLib, Peas, Gtk
+from gi.repository import GObject, Gio, GLib, Peas, Gtk, Gdk
 from gi.repository import RB
 
 from VkontakteSearch import VkontakteSearch
+import shutil, os, tempfile
 import vk_auth
 import VkontakteAccount
 
@@ -19,6 +20,7 @@ class VkontakteSource(RB.Source):
     self.searches = {}
     self.token = ''
     self.account = VkontakteAccount.instance()
+    self.settings = Gio.Settings("org.gnome.rhythmbox.plugins.vkontakte")
 
   def initialise(self):
     login, password = self.account.get()
@@ -54,10 +56,36 @@ class VkontakteSource(RB.Source):
 
         vbox = Gtk.VBox()
         vbox.pack_start(hbox, False, False, 0)
-        vbox.pack_start(entry_view, True, True, 5)
+        vbox.pack_start(entry_view, True, True, 5)        
 
         self.pack_start(vbox, True, True, 0)
-        self.show_all()        
+        self.show_all()
+
+        entry_view.connect("show_popup", self.show_popup_cb)
+
+        menu = Gtk.Menu()
+
+        action_copyurl = Gtk.Action ('CopyURL', 'Copy URL', 'Copy URL to Clipboard', "")
+        action_copyurl.connect ('activate', self.copy_url, shell)
+        action_download = Gtk.Action ('Download', 'Download', 'Download', "")
+        action_download.connect ('activate', self.download, shell)
+        action_group = Gtk.ActionGroup ('VkontakteSourceViewPopup')
+        action_group.add_action (action_copyurl)
+        action_group.add_action (action_download)
+        shell.props.ui_manager.insert_action_group (action_group)
+
+        popup_ui = """
+<ui>
+  <popup name="VkontakteSourceViewPopup">
+    <menuitem name="CopyURL" action="CopyURL"/>
+    <menuitem name="Download" action="Download"/>
+    <separator name="Sep"/>
+  </popup>
+</ui>
+"""
+
+        self.ui_id = shell.props.ui_manager.add_ui_from_string(popup_ui)
+        shell.props.ui_manager.ensure_update()
 
         self.initialised = True
   
@@ -187,5 +215,101 @@ class VkontakteSource(RB.Source):
 
       self.searches[self.current_search] = search
       self.entry_view.set_model(self.props.query_model)
+
+  def show_popup_cb(self, entry_view, over_entry):
+        # rhythmbox api break up (0.13.2 - 0.13.3)
+        if over_entry:
+            menu = self.props.shell.props.ui_manager.get_widget('/VkontakteSourceViewPopup')
+            menu.popup(None, None, None, None, 3, 0)
+
+  def copy_url(self, action, shell):
+		# rhythmbox api break up (0.13.2 - 0.13.3)
+        try:
+            selected_source = shell.get_property("selected-source")
+        except:
+            selected_source = shell.get_property("selected-page")
+        download_url = self.entry_view.get_selected_entries()[0].get_playback_uri();
+        atom = Gdk.atom_intern('CLIPBOARD', True)
+        clipboard = Gtk.Clipboard.get(atom)
+        clipboard.set_text(download_url, -1)
+        clipboard.store()
+
+  def download(self, action, shell):
+        # rhythmbox api break up (0.13.2 - 0.13.3)
+        try:
+            selected_source = shell.get_property("selected-source")
+        except:
+            selected_source = shell.get_property("selected-page")
+        for entry in self.entry_view.get_selected_entries():
+            self.download_queue.append(entry)
+        if not self.downloading:
+            entry = self.download_queue.pop(0)
+            self._start_download(entry)
+
+  def _start_download(self, entry):
+		shell = self.props.shell
+		self.download_url = entry.get_playback_uri()
+
+		filemask = self.settings['filemask']
+		artist = ''
+		title = ''
+		shell.props.db.entry_get(entry, RB.RhythmDBPropType.ARTIST, artist)
+		artist = artist[:50].replace('/', '')
+		shell.props.db.entry_get(entry, RB.RhythmDBPropType.TITLE, title)
+		title = title[:50].replace('/', '')
+		filemask = filemask.replace('%A', artist)
+		filemask = filemask.replace('%T', title)
+
+		self.filename = u"%s - %s" % (artist, title)
+		self.save_location = os.path.expanduser(filemask)
+		dir, file = os.path.split(self.save_location)
+		if not os.path.exists(dir):
+			try:
+				os.makedirs(dir)
+			except:
+				self.error_msg = "Can't create or access directory. Check settings (Edit => Plugins => Configure)"
+				self.notify_status_changed()
+				return
+
+		# Download file to the temporary folder
+		self.output_file = tempfile.NamedTemporaryFile(delete=False)
+		self.downloading = True
+		self.notify_status_changed()
+
+		self.downloader = RB.ChunkLoader()
+		self.downloader.set_callback(self.download_callback, self.output_file)
+		self.downloader.start(self.download_url, 64 * 1024)
+
+  def download_callback (self, loader, data, total, out):
+		  if not data:
+			 # Download finished
+			 error = loader.get_error()
+			 if error:
+				# report error somehow?
+				print "Error during downloading process happened: %s" % error
+				pass
+			 out.file.close()
+			 self.__load_current_size = 0
+			 self.downloading = False
+			 # Move temporary file to the save location
+			 try:
+				shutil.move(out.name, self.save_location)
+			 except:
+				self.error_msg = "Can't write to directory. Check settings (Edit => Plugins => Configure)"
+				self.notify_status_changed()
+				return
+			 if self.download_queue:
+				entry = self.download_queue.pop(0)
+				return self._start_download(entry)
+			 else:
+				self.downloading = False
+
+		  if self.downloading:
+			# Write to the file, update downloaded size
+			self.__load_current_size += len(data.str)
+			self.__load_total_size = total			
+			out.file.write(data.str)
+
+		  self.notify_status_changed()
 
 GObject.type_register(VkontakteSource)
