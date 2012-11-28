@@ -10,24 +10,18 @@ sudo cp org.gnome.rhythmbox.plugins.vkontakte.gschema.xml /usr/share/glib-2.0/sc
 sudo glib-compile-schemas /usr/share/glib-2.0/schemas/
 
 USING:
-currently it doesn't play by click in search results, so you can:
 1. drag-n-drop tracks to play queue from search results
 2. Just click play and use 'next track'/'prev track' and shuffle to play all search results sequentially
+3. Double click or Enter on track to play current marked track
 
+ABOUT
 ======
 rhythmbox-vkontakte is a rhythmbox plugin for searching and listening to vkontakte (vk.com) audio records
 
-rhythmbox-youtube (http://gitorious.org/rhythmbox-youtube/rhythmbox-youtube)
+rhythmbox-vkontakte (http://github.com/grunichev/rhythmbox-vkontakte)
 has been used as example by developing.
 
-INSTALLATION:
-1)
-cd ~/.gnome2/rhythmbox/plugins/ (create if missing)
-git clone git://github.com/grunichev/rhythmbox-vkontakte.git vkontakte
-
-2) activate "Vkontakte-Music" plugin
-
-If you're going to download files, set directory (Plugins => Vkontakte-Music => Configure)
+If you're going to download files, set directory (Plugins => Vkontakte => Configure)
 By default it's:
 ~/Music/%A - %T.mp3
 where %A is replaced with artist data of downloaded file and %T - with title.
@@ -36,8 +30,8 @@ You may use these symbols many times, e.g. for per-artist folders:
 
 ===========
 
-Copyright © 2010 Alexey Grunichev 
-http://github.com/grunichev/rhythmbox-vkontakte
+Copyright © 2012 Alexander Huhlaev
+http://github.com/sancheolz/rhythmbox-vkontakte
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
