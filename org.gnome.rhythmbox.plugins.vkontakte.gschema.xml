@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.rhythmbox.plugins.vkontkte" path="/org/gnome/rhythmbox/plugins/vkontakte/">
+    <key type="s" name="filemask">
+      <default>'~/Music/%A - %T.mp3'</default>
+      <summary>Mask and path for downloading music</summary>
+      <description>This is an example of a boolean setting.</description>
+    </key>
+  </schema>
+</schemalist>
