@@ -3,6 +3,7 @@ from gi.repository import RB
 
 from VkontakteSearch import VkontakteSearch
 import vk_auth
+import VkontakteAccount
 
 APP_ID = 1850196
 
@@ -17,8 +18,11 @@ class VkontakteSource(RB.Source):
     self.error_msg = ''
     self.searches = {}
     self.token = ''
+    self.account = VkontakteAccount.instance()
 
   def initialise(self):
+    login, password = self.account.get()
+    self.token, self.user_id = vk_auth.auth(login, password, APP_ID, "audio,friends")
     if len(self.token) == 0:
         self.show_login_ctrls()
     else:
@@ -160,8 +164,10 @@ class VkontakteSource(RB.Source):
     return True
 
   def on_login_button_clicked(self, button):
-    login, password = self.login_entry.get_text(), self.password_entry.get_text()
+    login, password = self.login_entry.get_text(), self.password_entry.get_text()    
     self.token, self.user_id = vk_auth.auth(login, password, APP_ID, "audio,friends")
+    if len(self.token) > 0:
+    	self.account.update(login, password)
     for child in self.get_children():
         child.destroy()
     self.show_search_ctrls()

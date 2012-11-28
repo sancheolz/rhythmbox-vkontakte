@@ -67,7 +67,7 @@ def auth(email, password, client_id, scope):
         # Need to give access to requested scope
         url = give_access(doc, opener)
     if urlparse(url).path != "/blank.html":
-        raise RuntimeError("Expected success here")
+        return '', ''
 
     def split_key_value(kv_pair):
         kv = kv_pair.split("=")
