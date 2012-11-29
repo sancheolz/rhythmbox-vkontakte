@@ -36,8 +36,7 @@ class VkontakteSource(RB.Source):
         entry_view = RB.EntryView.new(db=shell.props.db, shell_player=shell.props.shell_player, is_drag_source=True, is_drag_dest=False)
         entry_view.append_column(RB.EntryViewColumn.TITLE, True)
         entry_view.append_column(RB.EntryViewColumn.ARTIST, True)
-        entry_view.append_column(RB.EntryViewColumn.DURATION, True)
-        entry_view.set_sorting_order("Title", Gtk.SortType.ASCENDING)
+        entry_view.append_column(RB.EntryViewColumn.DURATION, True)        
         entry_view.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
   			
         entry_view.connect("entry_activated", self.entry_activated_cb)
@@ -62,9 +61,7 @@ class VkontakteSource(RB.Source):
         self.show_all()
 
         entry_view.connect("show_popup", self.show_popup_cb)
-
-        menu = Gtk.Menu()
-
+        
         action_copyurl = Gtk.Action ('CopyURL', 'Copy URL', 'Copy URL to Clipboard', "")
         action_copyurl.connect ('activate', self.copy_url, shell)
         action_download = Gtk.Action ('Download', 'Download', 'Download', "")
@@ -203,18 +200,19 @@ class VkontakteSource(RB.Source):
   def on_search_button_clicked(self, button):
     print "clicked search"
     entry = self.search_entry
-    if entry.get_text():
-      self.current_search = entry.get_text()
-      print "searching for '%s'" % self.current_search
+    self.current_search = entry.get_text()
+    if len(self.current_search) > 0:
+        self.entry_view.set_sorting_order("Title", Gtk.SortType.ASCENDING)
+    print "searching for '%s'" % self.current_search
  
-      search = VkontakteSearch(self.token, self.user_id, self.current_search, \
+    search = VkontakteSearch(self.token, self.user_id, self.current_search, \
                                self.props.shell.props.db, self.props.entry_type)
-      # Start the search asynchronously
-      GLib.idle_add(search.start, priority=GLib.PRIORITY_HIGH_IDLE)
-      self.props.query_model = search.query_model
+    # Start the search asynchronously
+    GLib.idle_add(search.start, priority=GLib.PRIORITY_HIGH_IDLE)
+    self.props.query_model = search.query_model
 
-      self.searches[self.current_search] = search
-      self.entry_view.set_model(self.props.query_model)
+    self.searches[self.current_search] = search
+    self.entry_view.set_model(self.props.query_model)      
 
   def show_popup_cb(self, entry_view, over_entry):
         # rhythmbox api break up (0.13.2 - 0.13.3)

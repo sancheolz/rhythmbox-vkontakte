@@ -85,14 +85,18 @@ class VkontakteSearch:
 	def start(self):
 		print "start search call"
 		self.error_msg = ''
-		params = {}
-		params['q'] = self.search_term
-		params['count'] = '100'
-		params['auto_complete'] = '1'
-		params['sort'] = '2'
-		params['uid'] = self.user_id
-		params['q'] = self.search_term
-		url = self.make_url('audio.search', params, self.token)		
+		params = {}				
+		method = ''
+		if len(self.search_term) == 0:
+			params['uid'] = self.user_id
+			method = 'audio.get'
+		else:
+			params['sort'] = '2'
+			params['q'] = self.search_term
+			params['count'] = '100'
+			params['auto_complete'] = '1'
+			method = 'audio.search'
+		url = self.make_url(method, params, self.token)
 		print "path='%s'" % url
 		loader = rb.Loader()
 		loader.get_url(url, self.on_search_results_recieved)
