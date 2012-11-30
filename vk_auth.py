@@ -1,4 +1,4 @@
-# - encoding: utf8 - 
+# -*- Mode: python; coding: utf-8; tab-width: 4; indent-tabs-mode: nil; -*-
 #
 # Copyright © 2012 dzhioev
 #
@@ -55,7 +55,6 @@ def give_access(doc, opener):
         raise NotImplementedError("Method '%s'" % params.method)
     return response.geturl()
 
-
 def auth(email, password, client_id, scope):
     if not isinstance(scope, list):
         scope = [scope]
@@ -76,5 +75,4 @@ def auth(email, password, client_id, scope):
     answer = dict(split_key_value(kv_pair) for kv_pair in urlparse(url).fragment.split("&"))
     if "access_token" not in answer or "user_id" not in answer:
         raise RuntimeError("Missing some values in answer")
-    return answer["access_token"], answer["user_id"] 
-
+    return answer["access_token"], answer["user_id"]

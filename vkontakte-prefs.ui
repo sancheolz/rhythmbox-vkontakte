@@ -60,7 +60,7 @@
             </child>
             <child>
               <object class="GtkLinkButton" id="linkbutton1">
-                <property name="label" translatable="yes">http://github.com/grunichev/rhythmbox-vkontakte/</property>
+                <property name="label" translatable="yes">http://github.com/sancheolz/rhythmbox-vkontakte/</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -69,7 +69,7 @@
                 <property name="xalign">0.44999998807907104</property>
                 <property name="yalign">0.47999998927116394</property>
                 <property name="image_position">right</property>
-                <property name="uri">http://github.com/grunichev/rhythmbox-vkontakte/</property>
+                <property name="uri">http://github.com/sancheolz/rhythmbox-vkontakte/</property>
               </object>
               <packing>
                 <property name="position">2</property>
